@@ -4,7 +4,7 @@ from ytmusicapi import YTMusic
 app = Flask(__name__, static_folder='static', static_url_path='')
 ytmusic = YTMusic()
 
-@app.route('/')
+@app.route('/static')
 def index():
     return app.send_static_file('index.html')
 
