@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Music Lite</title>
+  <style>
+    body {
+      margin: 0;
+      background: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      background: #1f1f1f;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    input {
+      width: 90%;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 20px;
+      background: #2a2a2a;
+      color: white;
+    }
+
+    .results {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .track {
+      background: #1e1e1e;
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      padding: 0.5rem;
+    }
+
+    .track img {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      margin-right: 1rem;
+    }
+
+    .track-info {
+      flex-grow: 1;
+    }
+
+    .track-title {
+      font-weight: bold;
+    }
+
+    .track-artist {
+      font-size: 0.9em;
+      color: #aaa;
+    }
+
+    .yt-link, .download-link, .play-button {
+      color: #1db954;
+      font-size: 0.9em;
+      text-decoration: none;
+      margin-right: 10px;
+    }
+
+    .yt-link:hover, .download-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <input type="text" id="searchInput" placeholder="Buscar músicas..." />
+  </header>
+  <div class="results" id="results"></div>
+
+  <audio id="audioPlayer" controls style="width: 100%; margin-top: 1rem;"></audio>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const resultsDiv = document.getElementById('results');
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    input.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        fetch(`/search?q=${encodeURIComponent(input.value)}`)
+          .then(res => res.json())
+          .then(data => {
+            resultsDiv.innerHTML = '';
+            data.forEach(item => {
+              if (item.videoId && item.thumbnails?.[0]) {
+                const track = document.createElement('div');
+                track.className = 'track';
+                track.innerHTML = `
+                  <img src="${item.thumbnails[0].url}" />
+                  <div class="track-info">
+                    <div class="track-title">${item.title}</div>
+                    <div class="track-artist">${item.artists?.[0]?.name || ''}</div>
+                    <div>
+                      <a class="play-button" href="#" onclick="playAudio('${item.videoId}')">Ouvir aqui</a>
+                      <a class="download-link" href="/download?id=${item.videoId}">Baixar</a>
+                      <a class="yt-link" href="https://www.youtube.com/watch?v=${item.videoId}" target="_blank">YouTube</a>
+                    </div>
+                  </div>
+                `;
+                resultsDiv.appendChild(track);
+              }
+            });
+          });
+      }
+    });
+
+    function playAudio(videoId) {
+      fetch(`/stream?id=${videoId}`)
+        .then(res => res.json())
+        .then(data => {
+          audioPlayer.src = data.audio_url;
+          audioPlayer.play();
+        });
+    }
+  </script>
+</body>
+</html>
