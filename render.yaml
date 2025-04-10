@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ytmusic-app
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/app.py
+    rootDir: backend
+    autoDeploy: true
+    plan: free
