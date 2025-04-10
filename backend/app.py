@@ -6,9 +6,13 @@ import os
 app = Flask(__name__)
 ytmusic = YTMusic()
 
+# Cria a pasta downloads se não existir
+if not os.path.exists("downloads"):
+    os.makedirs("downloads")
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html")  # HTML está na pasta /templates
 
 @app.route("/search")
 def search():
@@ -29,11 +33,13 @@ def stream():
         'forceurl': True,
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        audio_url = info['url']
-
-    return jsonify({'audio_url': audio_url})
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            audio_url = info['url']
+        return jsonify({'audio_url': audio_url})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route("/download")
 def download():
@@ -52,10 +58,13 @@ def download():
         }]
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
 
-    return send_file(filename, as_attachment=True)
+        return send_file(filename, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
