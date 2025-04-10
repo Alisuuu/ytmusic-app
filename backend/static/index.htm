@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YT Music App</title>
+</head>
+<body>
+  <input id="query" placeholder="Buscar música">
+  <button onclick="search()">Buscar</button>
+  <ul id="results"></ul>
+
+  <script>
+    async function search() {
+      const q = document.getElementById('query').value;
+      const res = await fetch(`/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const list = document.getElementById('results');
+      list.innerHTML = '';
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${item.title} - ${item.artists?.[0]?.name}
+          <a href="/download?id=${item.videoId}" target="_blank">Download</a>
+        `;
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
